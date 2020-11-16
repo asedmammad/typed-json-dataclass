@@ -35,6 +35,11 @@ def to_camel(string_to_convert: str):
     return converted
 
 
+def to_fullcase(string_to_convert: str):
+    converted = to_camel(string_to_convert)
+    return converted[0].upper() + converted[1:]
+
+
 def recursive_rename(raw_dict, format_method):
     renamed_dict = {}
     for k, v in raw_dict.items():

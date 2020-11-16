@@ -15,6 +15,11 @@ class CamelCaseObjects(TypedJsonMixin):
 
 
 @dataclass
+class FullCaseObjects(TypedJsonMixin):
+    ObjectId: str
+
+
+@dataclass
 class ChildObject(TypedJsonMixin):
     objectId: str
 
@@ -32,8 +37,8 @@ def test_mapping_from_dict_to_snake_case():
 
     expected_object = SnakeCaseObjects('asdf')
     assert SnakeCaseObjects.from_dict(
-            camel_case_object,
-            mapping_mode=MappingMode.SnakeCase) == expected_object
+        camel_case_object,
+        mapping_mode=MappingMode.SnakeCase) == expected_object
 
 
 def test_mapping_from_dict_to_camel_case():
@@ -44,8 +49,20 @@ def test_mapping_from_dict_to_camel_case():
 
     expected_object = CamelCaseObjects('asdf')
     assert CamelCaseObjects.from_dict(
-            snake_case_json,
-            mapping_mode=MappingMode.CamelCase) == expected_object
+        snake_case_json,
+        mapping_mode=MappingMode.CamelCase) == expected_object
+
+
+def test_mapping_from_dict_to_full_case():
+
+    snake_case_dict = {
+        'object_id': 'asdf'
+    }
+
+    expected_object = FullCaseObjects('asdf')
+    assert FullCaseObjects.from_dict(
+        snake_case_dict,
+        mapping_mode=MappingMode.FullCase) == expected_object
 
 
 def test_mapping_from_json_to_snake_case():
@@ -57,8 +74,8 @@ def test_mapping_from_json_to_snake_case():
 
     expected_object = SnakeCaseObjects('asdf')
     assert SnakeCaseObjects.from_json(
-            camel_case_json,
-            mapping_mode=MappingMode.SnakeCase) == expected_object
+        camel_case_json,
+        mapping_mode=MappingMode.SnakeCase) == expected_object
 
 
 def test_mapping_from_json_to_camel_case():
@@ -70,8 +87,21 @@ def test_mapping_from_json_to_camel_case():
 
     expected_object = CamelCaseObjects('asdf')
     assert CamelCaseObjects.from_json(
-            snake_case_json,
-            mapping_mode=MappingMode.CamelCase) == expected_object
+        snake_case_json,
+        mapping_mode=MappingMode.CamelCase) == expected_object
+
+
+def test_mapping_from_json_to_full_case():
+    snake_case_json = """
+    {
+        "object_id": "asdf"
+    }
+    """
+
+    expected_object = FullCaseObjects('asdf')
+    assert FullCaseObjects.from_json(
+        snake_case_json,
+        mapping_mode=MappingMode.FullCase) == expected_object
 
 
 def test_mapping_to_camel_case_dict_from_snake_case():
@@ -92,6 +122,27 @@ def test_mapping_to_snake_case_dict_from_camel_case():
 
     target = SnakeCaseObjects('asdf')
     actual = target.to_dict(mapping_mode=MappingMode.CamelCase)
+    assert expected == actual
+
+
+def test_mapping_to_full_case_dict_from_snake_case():
+    expected = {
+        'ObjectId': 'asdf'
+    }
+
+    target = SnakeCaseObjects('asdf')
+    actual = target.to_dict(mapping_mode=MappingMode.FullCase)
+    assert expected == actual
+
+
+def test_mapping_to_full_case_dict_from_camel_case():
+
+    expected = {
+        'ObjectId': 'asdf'
+    }
+
+    target = CamelCaseObjects('asdf')
+    actual = target.to_dict(mapping_mode=MappingMode.FullCase)
     assert expected == actual
 
 

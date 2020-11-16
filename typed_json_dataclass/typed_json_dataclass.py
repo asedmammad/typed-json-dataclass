@@ -5,13 +5,14 @@ from dataclasses import InitVar, MISSING, asdict, fields, is_dataclass
 from enum import Enum
 from warnings import warn
 
-from typed_json_dataclass.utils import to_camel, to_snake, recursive_rename
+from typed_json_dataclass.utils import to_camel, to_fullcase, to_snake, recursive_rename
 
 
 class MappingMode(Enum):
     SnakeCase = 1
     CamelCase = 2
-    NoMap = 3
+    FullCase = 3
+    NoMap = 4
 
 
 class TypedJsonMixin:
@@ -53,7 +54,7 @@ class TypedJsonMixin:
                     # are the same
                     if actual_type != self.__class__:
                         raise TypeError((f'{class_name}.{field_name} was '
-                                        'defined as a <class '
+                                         'defined as a <class '
                                          f"'{expected_type}'>, "
                                          f'but we found a {actual_type} '
                                          'instead'))
@@ -73,7 +74,7 @@ class TypedJsonMixin:
                           isinstance(field_value, list)):
                         if not hasattr(field_def.type, '__args__'):
                             raise TypeError((f'{class_name}.{field_name} was '
-                                            f'defined as a {actual_type}, '
+                                             f'defined as a {actual_type}, '
                                              'but you must use '
                                              'typing.List[type] '
                                              'instead'))
@@ -81,7 +82,7 @@ class TypedJsonMixin:
                         expected_element_type = field_def.type.__args__[0]
                         if isinstance(expected_element_type, typing.TypeVar):
                             raise TypeError((f'{class_name}.{field_name} was '
-                                            f'defined as a {actual_type}, '
+                                             f'defined as a {actual_type}, '
                                              'but is missing information '
                                              'about the'
                                              ' type of the elements inside '
@@ -89,7 +90,7 @@ class TypedJsonMixin:
 
                         if not self._ensure_no_native_collections(
                                 expected_element_type
-                                ):
+                        ):
                             raise TypeError(((f'{class_name}.{field_name} was '
                                               'detected to use a native '
                                               'Python '
@@ -121,7 +122,7 @@ class TypedJsonMixin:
 
                         if not self._validate_list_types(
                                 field_value, field_def.type
-                                ):
+                        ):
                             raise TypeError((f'{class_name}.{field_name} is '
                                              f'{field_value} which does not '
                                              'match '
@@ -135,8 +136,8 @@ class TypedJsonMixin:
                     elif not isinstance(field_value, expected_type):
                         if isinstance(field_value, dict):
                             if not self._ensure_no_native_collections(
-                                    expected_type
-                                  ):
+                                expected_type
+                            ):
                                 raise TypeError((f'{class_name}.{field_name} '
                                                  'was '
                                                  'detected to use a native '
@@ -222,10 +223,10 @@ class TypedJsonMixin:
         has_init_vars = any(field.type == InitVar and field.default is MISSING
                             for field in cls.__dataclass_fields__.values())
         children_have_init_vars = any(
-                child.type._contains_non_default_init_vars(previous_classes)
-                for child in fields(cls)
-                if (is_dataclass(child.type)
-                    and child.type not in previous_classes))
+            child.type._contains_non_default_init_vars(previous_classes)
+            for child in fields(cls)
+            if (is_dataclass(child.type)
+                and child.type not in previous_classes))
         return has_init_vars or children_have_init_vars
 
     @classmethod
@@ -247,8 +248,12 @@ class TypedJsonMixin:
         if mapping_mode == MappingMode.NoMap:
             return cls(**raw_dict)
 
-        format_method = to_snake if mapping_mode == MappingMode.SnakeCase \
-            else to_camel
+        format_method = {
+            'SnakeCase': to_snake,
+            'CamelCase': to_camel,
+            'FullCase': to_fullcase,
+        }.get(mapping_mode.name)
+
         mapped_dict = recursive_rename(raw_dict, format_method)
         return cls(**mapped_dict)
 
@@ -292,8 +297,12 @@ class TypedJsonMixin:
         if mapping_mode == MappingMode.NoMap:
             return self_dict
 
-        format_method = to_snake if mapping_mode == MappingMode.SnakeCase \
-            else to_camel
+        format_method = {
+            'SnakeCase': to_snake,
+            'CamelCase': to_camel,
+            'FullCase': to_fullcase,
+        }.get(mapping_mode.name)
+
         mapped_dict = recursive_rename(self_dict, format_method)
         return mapped_dict
 
