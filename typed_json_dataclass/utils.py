@@ -1,13 +1,7 @@
-def to_snake(string_to_convert: str):
-    converted = ''
-    for i, c in enumerate(string_to_convert):
-        if c == c.lower():
-            converted += c
-        else:
-            if 0 < i:
-                converted += '_'
-            converted += c.lower()
-    return converted
+def to_snake(string_to_convert: str) -> str:
+    import re
+    string_to_convert = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string_to_convert)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', string_to_convert).lower()
 
 
 def to_camel(string_to_convert: str):
